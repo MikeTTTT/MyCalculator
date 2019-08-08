@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import utils.StringUtils;
 
 public class UICreator {
@@ -15,32 +16,57 @@ public class UICreator {
 //    static HBox hBox;
     // 添加输出行
     static Label output = new Label();
-    static int lastInput;
-    static int currentInput;
-    static int lastResult;
+    static long lastInput;
+    static long currentInput;
+    static long lastResult;
     static String lastOperator;
     static boolean clearLabel = false;
 
+    public static Label displayScreen(){
+        output.setFont(Font.font(30));
+        return output;
+    }
+
     public static VBox displaySign(){
-        VBox vBox = new VBox(13);
+        VBox vBox = new VBox(2);
+        Button btnClear = new Button("CE");
+        Button btnBack = new Button("<-");
         Button btnTimes = new Button("X");
         Button btnDivide = new Button("/");
         Button btnPlus = new Button("+");
         Button btnMinus = new Button("-");
         Button btnEquals = new Button("=");
 
+        btnBack.setOnAction(e -> {
+            logger.info(String.format("pressed backspace, lastInput = %d, currentInput = %d", lastInput, currentInput));
+            String temp = output.getText();
+            if (StringUtils.isNotEmpty(temp)){
+                if (temp.length() == 1){
+                    output.setText("0");
+                }else{
+                    output.setText(temp.substring(0, temp.length()-1));
+                }
+            }
+        });
+
+        btnClear.setOnAction(e -> {
+            logger.info(String.format("pressed clear, lastInput = %d, currentInput = %d", lastInput, currentInput));
+            output.setText("0");
+            currentInput = 0;
+        });
+
         btnTimes.setOnAction(e -> {
             logger.info(String.format("pressed times, lastInput = %d, currentInput = %d", lastInput, currentInput));
             if (StringUtils.isNotEmpty(output.getText())) {
-                lastInput = Integer.parseInt(output.getText());
-                lastOperator = "*";
+                lastInput = Long.parseLong(output.getText());
+                lastOperator = "X";
                 clearLabel = true;
             }
         });
         btnDivide.setOnAction(e -> {
             logger.info(String.format("pressed divide, lastInput = %d, currentInput = %d", lastInput, currentInput));
             if (StringUtils.isNotEmpty(output.getText())) {
-                lastInput = Integer.parseInt(output.getText());
+                lastInput = Long.parseLong(output.getText());
                 lastOperator = "/";
                 clearLabel = true;
             }
@@ -48,7 +74,7 @@ public class UICreator {
         btnPlus.setOnAction(e -> {
             logger.info(String.format("pressed plus, lastInput = %d, currentInput = %d", lastInput, currentInput));
             if (StringUtils.isNotEmpty(output.getText())) {
-                lastInput = Integer.parseInt(output.getText());
+                lastInput = Long.parseLong(output.getText());
                 lastOperator = "+";
                 clearLabel = true;
             }
@@ -56,7 +82,7 @@ public class UICreator {
         btnMinus.setOnAction(e -> {
             logger.info(String.format("pressed minus, lastInput = %d, currentInput = %d", lastInput, currentInput));
             if (StringUtils.isNotEmpty(output.getText())) {
-                lastInput = Integer.parseInt(output.getText());
+                lastInput = Long.parseLong(output.getText());
                 lastOperator = "-";
                 clearLabel = true;
             }
@@ -65,33 +91,38 @@ public class UICreator {
             logger.info(String.format("pressed equals, lastInput = %d, currentInput = %d, operator = %s, lastResult = %d ",
                     lastInput, currentInput, lastOperator, lastResult));
             if (StringUtils.isNotEmpty(output.getText())) {
-                currentInput = Integer.parseInt(output.getText());
-                lastResult = calculate(lastInput, currentInput, lastOperator);
                 clearLabel = true;
-                output.setText(String.valueOf(lastResult));
+                if (output.getText().length() > 19){
+                    currentInput = 0;
+                    output.setText("ERROR");
+                }else{
+                    currentInput = Long.parseLong(output.getText());
+                    lastResult = calculate(lastInput, currentInput, lastOperator);
+                    output.setText(String.valueOf(lastResult));
+                }
             }
         });
 
-        vBox.getChildren().setAll(btnPlus, btnMinus, btnTimes, btnDivide, btnEquals);
+        vBox.getChildren().setAll(btnClear, btnBack, btnPlus, btnMinus, btnTimes, btnDivide, btnEquals);
         return vBox;
     }
 
-    private static int calculate(int lInput, int cInput, String lOperator) {
-        logger.info(String.format("calling calculate, lastInput = {}, currentInput = {}, lastoperator = {} ",
-                new Object[]{lInput, cInput, lOperator}));
-        int result = 0;
+    private static long calculate(long lInput, long cInput, String lOperator) {
+        logger.info(String.format("calling calculate, lastInput = %d, currentInput = %d, lastoperator = %s ",
+                lInput, cInput, lOperator));
+        long result = 0;
         switch (lOperator){
             case "+":
-                result = lInput+cInput;
+                result = lInput + cInput;
                 break;
             case "-":
-                result = lInput-cInput;
+                result = lInput - cInput;
                 break;
             case "X":
-                result = lInput*cInput;
+                result = lInput * cInput;
                 break;
             case "/":
-                result = lInput/cInput;
+                result = lInput / cInput;
                 break;
             default:
                 break;
@@ -100,9 +131,9 @@ public class UICreator {
 
     }
 
-    public static VBox displayNumber(){
+    public static GridPane displayNumber(){
 
-        VBox vBox = new VBox(10);
+//        VBox vBox = new VBox(10);
         // 添加数字键
         GridPane numberSection = new GridPane();
         numberSection.setPadding(new Insets(5,5,5,5));
@@ -121,7 +152,7 @@ public class UICreator {
 
         // setting activity
         btnNum0.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("0");
             }else{
                 output.setText(output.getText()+"0");
@@ -129,7 +160,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum1.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("1");
             }else{
                 output.setText(output.getText()+"1");
@@ -137,7 +168,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum2.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("2");
             }else{
                 output.setText(output.getText()+"2");
@@ -145,7 +176,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum3.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("3");
             }else{
                 output.setText(output.getText()+"3");
@@ -153,7 +184,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum4.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("4");
             }else{
                 output.setText(output.getText()+"4");
@@ -161,7 +192,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum5.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("5");
             }else{
                 output.setText(output.getText()+"5");
@@ -169,7 +200,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum6.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("6");
             }else{
                 output.setText(output.getText()+"6");
@@ -177,7 +208,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum7.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("7");
             }else{
                 output.setText(output.getText()+"7");
@@ -185,7 +216,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum8.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("8");
             }else{
                 output.setText(output.getText()+"8");
@@ -193,7 +224,7 @@ public class UICreator {
             clearLabel = false;
         });
         btnNum9.setOnAction(e -> {
-            if (clearLabel){
+            if (clearCurrentLabel()){
                 output.setText("9");
             }else{
                 output.setText(output.getText()+"9");
@@ -214,11 +245,16 @@ public class UICreator {
         numberSection.getChildren().setAll(btnNum0,btnNum1,btnNum2,btnNum3,btnNum4,btnNum5,btnNum6,btnNum7,btnNum8,btnNum9);
 
 //        GridPane.setHalignment(output, HPos.RIGHT);
-        vBox.getChildren().setAll(output, numberSection);
+        output.setText("0");
+//        vBox.getChildren().setAll(output, numberSection);
 //        Scene scene = new Scene(numberSection);
 //        window.setScene(scene);
 //        window.show();
-        return vBox;
+        return numberSection;
+    }
+
+    private static boolean clearCurrentLabel(){
+        return clearLabel || (output.getText().length() == 1 && StringUtils.equalsIgnoreCases(output.getText(),"0"));
     }
 
 }
