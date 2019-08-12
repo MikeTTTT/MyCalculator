@@ -9,28 +9,30 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import utils.StringUtils;
 
-public class UICreator {
+public class UICreator<T> {
       private static final Logger logger = Logger.getLogger(UICreator.class);
 
 //    static VBox vBox;
 //    static HBox hBox;
     // 添加输出行
-    static Label output = new Label();
-    static long lastInput;
-    static long currentInput;
-    static long lastResult;
-    static String lastOperator;
-    static boolean clearLabel = false;
-    static double buttonWidth = 40;
-    static double buttonHeight = 20;
+    public Label output = new Label();
+    public long lastInput;
+    public long currentInput;
+    public long lastResult;
+    public String lastOperator;
+    public boolean clearLabel = false;
+    public double buttonWidth = 40;
+    public double buttonHeight = 20;
 
-    public static Label displayScreen(){
+
+
+    public Label displayScreen(){
         output.setTextAlignment(TextAlignment.RIGHT);
         output.setFont(Font.font(30));
         return output;
     }
 
-    public static GridPane displayCenter(){
+    public GridPane displayCenter(){
 
         // 添加数字键
         GridPane centerSection = new GridPane();
@@ -281,11 +283,11 @@ public class UICreator {
         return centerSection;
     }
 
-    private static boolean clearCurrentLabel(){
+    private  boolean clearCurrentLabel(){
         return clearLabel || (output.getText().length() == 1 && StringUtils.equalsIgnoreCases(output.getText(),"0"));
     }
 
-    private static long calculate(long lInput, long cInput, String lOperator) {
+    private long calculate(long lInput, long cInput, String lOperator) {
         logger.info(String.format("calling calculate, lastInput = %d, currentInput = %d, lastoperator = %s ",
                 lInput, cInput, lOperator));
         long result = 0;
